@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartPark - Mapa de Vagas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- BANNER DE ALERTA (WebSocket Desconectado) -->
+    <div id="alertBanner" class="alert-banner" style="display: none;">
+        <i class="fas fa-triangle-exclamation"></i>
+        <span>Conexão WebSocket perdida. Tentando reconectar...</span>
+    </div>
+
+    <!-- HEADER -->
+    <header class="app-header">
+        <div class="app-header-brand">
+            <div class="logo">
+                <i class="fas fa-square-parking"></i>
+                Smart<span>Park</span>
+            </div>
+        </div>
+        <div class="app-header-meta">
+            <div class="connection-status">
+                <span id="wsIndicator" class="pulse"></span>
+                <span id="wsStatus">Conectado</span>
+            </div>
+            <span class="last-update">
+                <i class="fas fa-clock"></i>
+                Última atualização: <span id="lastUpdate">--:--:--</span>
+            </span>
+        </div>
+    </header>
+
+    <!-- NAVEGAÇÃO -->
+    <nav class="main-nav">
+        <div class="nav-links">
+            <a class="nav-link" href="dashboard_admin.html"><i class="fas fa-gauge-high"></i> Dashboard</a>
+            <a class="nav-link active" href="vagas.html"><i class="fas fa-map-location-dot"></i> Mapa de Vagas</a>
+            <a class="nav-link" href="totem.html"><i class="fas fa-square-parking"></i> Totem</a>
+        </div>
+        <a class="nav-logout" href="login.html"><i class="fas fa-right-from-bracket"></i> Sair</a>
+    </nav>
+
+    <!-- MAPA DE VAGAS EM TEMPO REAL -->
+    <section class="spots-section">
+
+        <div class="spots-section-title">
+            <i class="fas fa-map-location-dot"></i>
+            Mapa de Ocupação em Tempo Real
+        </div>
+
+        <!-- Grade de vagas - preenchida dinamicamente pelo script.js (renderSpots) -->
+        <div id="spotsGrid" class="spots-grid"></div>
+
+        <!-- Legenda -->
+        <div class="legend">
+            <span class="legend-item">
+                <span class="legend-swatch legend-swatch--available"></span>
+                Disponível
+            </span>
+            <span class="legend-item">
+                <span class="legend-swatch legend-swatch--occupied"></span>
+                Ocupada
+            </span>
+            <span class="legend-item">
+                <span class="legend-swatch legend-swatch--transition"></span>
+                Transição
+            </span>
+            <span class="legend-item">
+                <span class="legend-swatch legend-swatch--offline"></span>
+                Sem sinal
+            </span>
+        </div>
+
+    </section>
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>

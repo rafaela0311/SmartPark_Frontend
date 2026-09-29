@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartPark - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- BANNER DE ALERTA (WebSocket Desconectado) -->
+    <div id="alertBanner" class="alert-banner" style="display: none;">
+        <i class="fas fa-triangle-exclamation"></i>
+        <span>Conexão WebSocket perdida. Tentando reconectar...</span>
+    </div>
+
+    <!-- HEADER -->
+    <header class="app-header">
+        <div class="app-header-brand">
+            <div class="logo">
+                <i class="fas fa-square-parking"></i>
+                Smart<span>Park</span>
+            </div>
+        </div>
+        <div class="app-header-meta">
+            <div class="connection-status">
+                <span id="wsIndicator" class="pulse"></span>
+                <span id="wsStatus">Conectado</span>
+            </div>
+            <span class="last-update">
+                <i class="fas fa-clock"></i>
+                Última atualização: <span id="lastUpdate">--:--:--</span>
+            </span>
+        </div>
+    </header>
+
+    <!-- NAVEGAÇÃO -->
+    <nav class="main-nav">
+        <div class="nav-links">
+            <a class="nav-link active" href="dashboard_admin.html"><i class="fas fa-gauge-high"></i> Dashboard</a>
+            <a class="nav-link" href="vagas.html"><i class="fas fa-map-location-dot"></i> Mapa de Vagas</a>
+            <a class="nav-link" href="totem.html"><i class="fas fa-square-parking"></i> Totem</a>
+        </div>
+        <a class="nav-logout" href="login.html"><i class="fas fa-right-from-bracket"></i> Sair</a>
+    </nav>
+
+    <!-- KPIs - CARDS DE INDICADORES -->
+    <section class="kpi-grid">
+
+        <div class="kpi-card">
+            <div class="kpi-card-header">
+                <span class="kpi-card-title">Vagas Disponíveis</span>
+                <i class="fas fa-square-parking"></i>
+            </div>
+            <div id="availableSpots" class="kpi-value">--</div>
+            <div class="kpi-sub">de <span id="totalSpots">--</span> vagas</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-card-header">
+                <span class="kpi-card-title">Taxa de Ocupação</span>
+                <i class="fas fa-chart-pie"></i>
+            </div>
+            <div id="occupancyRate" class="kpi-value">--%</div>
+            <div class="kpi-sub">em operação</div>
+            <div class="kpi-progress">
+                <div id="occupancyBar" class="kpi-progress-fill"></div>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-card-header">
+                <span class="kpi-card-title">Tempo Médio</span>
+                <i class="fas fa-clock"></i>
+            </div>
+            <div id="avgTime" class="kpi-value">--</div>
+            <div class="kpi-sub">de permanência</div>
+        </div>
+
+        <div class="kpi-card kpi-card--network">
+            <div class="kpi-card-header">
+                <span class="kpi-card-title">Status da Rede IoT</span>
+                <i class="fas fa-wifi"></i>
+            </div>
+            <div id="networkStatus" class="kpi-value">--%</div>
+            <div class="kpi-sub"><span id="sensorsOnline">--</span> de 18 sensores online</div>
+            <div class="kpi-progress">
+                <div id="networkBar" class="kpi-progress-fill kpi-progress-fill--network"></div>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- GRÁFICOS -->
+    <section class="charts-grid">
+
+        <div class="chart-card">
+            <div class="chart-card-title">
+                <i class="fas fa-chart-line icon-line"></i>
+                Ocupação - Últimas 24h
+            </div>
+            <div class="chart-canvas-wrap">
+                <canvas id="chartOccupancy"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-card-title">
+                <i class="fas fa-fire icon-fire"></i>
+                Picos de Movimento
+            </div>
+            <div class="chart-canvas-wrap">
+                <canvas id="chartHeatmap"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card chart-card--wide">
+            <div class="chart-card-title">
+                <i class="fas fa-chart-bar icon-bar"></i>
+                Distribuição por Tempo de Permanência
+            </div>
+            <div class="chart-canvas-wrap chart-canvas-wrap--tall">
+                <canvas id="chartDuration"></canvas>
+            </div>
+        </div>
+
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="script.js"></script>
+
+</body>
+
+</html>

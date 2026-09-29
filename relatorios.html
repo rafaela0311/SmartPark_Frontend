@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartPark - Relatórios</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- BANNER DE ALERTA -->
+    <div id="alertBanner" class="alert-banner">
+        <i class="fas fa-triangle-exclamation"></i>
+        <span>Conexão WebSocket perdida. Tentando reconectar...</span>
+    </div>
+
+    <!-- HEADER -->
+    <header class="app-header">
+        <div class="app-header-brand">
+            <div class="logo">
+                <i class="fas fa-square-parking"></i>
+                Smart<span>Park</span>
+            </div>
+        </div>
+        <div class="app-header-meta">
+            <div class="connection-status">
+                <span id="wsIndicator" class="pulse"></span>
+                <span id="wsStatus">Conectado</span>
+            </div>
+            <span class="last-update">
+                <i class="fas fa-clock"></i>
+                Última atualização: <span id="lastUpdate">--:--:--</span>
+            </span>
+        </div>
+    </header>
+
+    <!-- NAVEGAÇÃO -->
+    <nav class="main-nav">
+        <div class="nav-links">
+            <a class="nav-link" href="dashboard_admin.html"><i class="fas fa-gauge-high"></i> Dashboard</a>
+            <a class="nav-link" href="vagas.html"><i class="fas fa-map-location-dot"></i> Mapa de Vagas</a>
+            <a class="nav-link" href="totem.html"><i class="fas fa-square-parking"></i> Totem</a>
+            <a class="nav-link active" href="relatorios.html"><i class="fas fa-chart-simple"></i> Relatórios</a>
+        </div>
+        <a class="nav-logout" href="login.html"><i class="fas fa-right-from-bracket"></i> Sair</a>
+    </nav>
+
+    <!-- FILTROS -->
+    <section class="filters-section">
+        <div class="filters-container">
+            <div class="filter-group">
+                <label class="filter-label" for="dateFrom">Data Inicial</label>
+                <input class="filter-input" type="date" id="dateFrom" value="2026-08-01">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label" for="dateTo">Data Final</label>
+                <input class="filter-input" type="date" id="dateTo" value="2026-08-25">
+            </div>
+            <button class="btn-primary" id="applyFilters">
+                <i class="fas fa-filter"></i> Aplicar Filtro
+            </button>
+            <button class="btn-secondary" id="exportCSV">
+                <i class="fas fa-file-csv"></i> Exportar CSV
+            </button>
+        </div>
+    </section>
+
+    <!-- RESUMO DOS DADOS -->
+    <section class="kpi-grid" id="reportSummary">
+        <div class="kpi-card">
+            <div class="kpi-card-header">
+                <span class="kpi-card-title">Ocupação Média</span>
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div id="avgOccupancy" class="kpi-value">--%</div>
+            <div class="kpi-sub">no período selecionado</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-card-header">
+                <span class="kpi-card-title">Pico Máximo</span>
+                <i class="fas fa-fire"></i>
+            </div>
+            <div id="peakOccupancy" class="kpi-value">--%</div>
+            <div class="kpi-sub">em <span id="peakTime">--</span></div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-card-header">
+                <span class="kpi-card-title">Horário de Pico</span>
+                <i class="fas fa-clock"></i>
+            </div>
+            <div id="peakHour" class="kpi-value">--h</div>
+            <div class="kpi-sub">com maior ocupação média</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-card-header">
+                <span class="kpi-card-title">Total de Registros</span>
+                <i class="fas fa-database"></i>
+            </div>
+            <div id="totalRecords" class="kpi-value">--</div>
+            <div class="kpi-sub">leituras processadas</div>
+        </div>
+    </section>
+
+    <!-- GRÁFICOS -->
+    <section class="charts-grid">
+
+        <div class="chart-card chart-card--wide">
+            <div class="chart-card-title">
+                <i class="fas fa-chart-bar icon-bar"></i>
+                Ocupação Média por Hora
+            </div>
+            <div class="chart-canvas-wrap chart-canvas-wrap--tall">
+                <canvas id="chartHourly"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-card-title">
+                <i class="fas fa-fire icon-fire"></i>
+                Heatmap - Picos de Movimento
+            </div>
+            <div class="chart-canvas-wrap">
+                <canvas id="chartHeatmap"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-card-title">
+                <i class="fas fa-chart-line icon-line"></i>
+                Evolução Diária
+            </div>
+            <div class="chart-canvas-wrap">
+                <canvas id="chartDaily"></canvas>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- TABELA DE DADOS HISTÓRICOS -->
+    <section class="table-section">
+        <div class="table-header">
+            <span class="table-title">
+                <i class="fas fa-table"></i> Dados Históricos
+            </span>
+            <span class="table-count" id="tableCount">Mostrando 0 registros</span>
+        </div>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Data/Hora</th>
+                        <th>Total Vagas</th>
+                        <th>Ocupadas</th>
+                        <th>Disponíveis</th>
+                        <th>Taxa Ocupação</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                            <i class="fas fa-spinner fa-spin" style="font-size: 24px; display: block; margin-bottom: 8px;"></i>
+                            Carregando dados...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="table-footer">
+            <div class="pagination">
+                <button class="page-btn" id="prevPage"><i class="fas fa-chevron-left"></i></button>
+                <span id="pageInfo">Página 1 de 1</span>
+                <button class="page-btn" id="nextPage"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="script.js"></script>
+
+</body>
+</html>

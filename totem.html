@@ -1,0 +1,85 @@
+<!-- totem.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartPark - Totem</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <div class="totem-container">
+        <!-- Header -->
+        <header class="totem-header">
+            <div class="logo">
+                <i class="fas fa-parking"></i>
+                Smart<span>Park</span>
+            </div>
+            <div class="last-update">
+                <i class="fas fa-clock"></i>
+                Atualizado: <span id="totemUpdateTime">--:--:--</span>
+            </div>
+        </header>
+
+        <!-- Status principal -->
+        <main class="totem-main">
+            <div class="status-grid">
+                <!-- Vagas Disponíveis -->
+                <div class="status-card available">
+                    <div class="status-icon">
+                        <i class="fas fa-circle-check"></i>
+                    </div>
+                    <div class="status-number" id="totemAvailable">--</div>
+                    <div class="status-label">VAGAS DISPONÍVEIS</div>
+                </div>
+
+                <!-- Vagas Ocupadas -->
+                <div class="status-card occupied">
+                    <div class="status-icon">
+                        <i class="fas fa-circle-xmark"></i>
+                    </div>
+                    <div class="status-number" id="totemOccupied">--</div>
+                    <div class="status-label">VAGAS OCUPADAS</div>
+                </div>
+
+                <!-- Total de Vagas -->
+                <div class="status-card total">
+                    <div class="status-icon">
+                        <i class="fas fa-square-parking"></i>
+                    </div>
+                    <div class="status-number" id="totemTotal">--</div>
+                    <div class="status-label">TOTAL DE VAGAS</div>
+                </div>
+            </div>
+
+            <!-- Barra de ocupação -->
+            <div class="occupancy-bar-container">
+                <div class="occupancy-bar-label">
+                    <span>Taxa de Ocupação</span>
+                    <span id="totemOccupancyRate">--%</span>
+                </div>
+                <div class="occupancy-bar-track">
+                    <div class="occupancy-bar-fill" id="totemOccupancyBar" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <!-- Mensagem de status -->
+            <div class="totem-message" id="totemMessage">
+                <i class="fas fa-check-circle"></i>
+                Estacionamento com vagas disponíveis
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="totem-footer">
+            <span>SmartPark v1.0</span>
+            <span>•</span>
+            <span>Estacionamento Inteligente</span>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
