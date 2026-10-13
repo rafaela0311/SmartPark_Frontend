@@ -1,6 +1,7 @@
 <!-- totem.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
+
 <body>
     <div class="totem-container">
         <!-- Header -->
@@ -22,6 +24,17 @@
                 Atualizado: <span id="totemUpdateTime">--:--:--</span>
             </div>
         </header>
+        <!-- NAVEGAÇÃO -->
+        <nav class="main-nav">
+            <div class="nav-links">
+                <a class="nav-link" href="dashboard_admin.html"><i class="fas fa-gauge-high"></i> Dashboard</a>
+                <a class="nav-link active" href="vagas.html"><i class="fas fa-map-location-dot"></i> Mapa de Vagas</a>
+                <a class="nav-link" href="totem.html"><i class="fas fa-square-parking"></i> Totem</a>
+                <a class="nav-link active" href="relatorios.html"><i class="fas fa-chart-simple"></i> Relatórios</a>
+
+            </div>
+        </nav>
+
 
         <!-- Status principal -->
         <main class="totem-main">
@@ -82,4 +95,5 @@
 
     <script src="script.js"></script>
 </body>
+
 </html>

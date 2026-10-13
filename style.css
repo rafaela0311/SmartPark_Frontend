@@ -231,23 +231,6 @@ a {
     color: var(--color-green);
 }
 
-.nav-logout {
-    padding: 10px 16px;
-    border-radius: var(--border-radius-sm);
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-muted);
-    transition: var(--transition);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.nav-logout:hover {
-    background: var(--color-red-bg);
-    color: var(--color-red);
-}
-
 /* ============================================
    KPIs - CARDS DE INDICADORES
 ============================================ */
@@ -395,6 +378,24 @@ a {
     white-space: nowrap;
 }
 
+.btn-primary {
+    background: var(--color-green);
+    color: #04180b;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    padding: 13px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: var(--transition);
+}
+
+.btn-primary:hover {
+    background: var(--color-green-dark);
+    color: var(--text-primary);
+}
+
 .btn-secondary {
     background: var(--bg-card);
     color: var(--text-secondary);
@@ -514,16 +515,6 @@ a {
     color: var(--color-red);
 }
 
-.spot-card.transition {
-    border-color: var(--color-orange);
-    background: var(--color-orange-bg);
-}
-.spot-card.transition .spot-status {
-    color: var(--color-orange);
-}
-.spot-card.transition i {
-    color: var(--color-orange);
-}
 
 .spot-card.offline {
     border-color: var(--color-gray);
@@ -569,9 +560,7 @@ a {
 .legend-swatch--occupied {
     background: var(--color-red);
 }
-.legend-swatch--transition {
-    background: var(--color-orange);
-}
+
 .legend-swatch--offline {
     background: var(--color-gray);
     border: 1px dashed var(--color-gray-light);
@@ -933,249 +922,6 @@ a {
 }
 
 /* ============================================
-   LOGIN
-============================================ */
-.login-page {
-    min-height: calc(100vh - 40px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.login-card {
-    width: 100%;
-    max-width: 380px;
-    background: var(--bg-secondary);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: var(--border-radius);
-    padding: 36px 32px;
-    box-shadow: var(--shadow);
-}
-
-.login-brand {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    font-size: 26px;
-    margin-bottom: 8px;
-}
-
-.login-subtitle {
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 13px;
-    margin-bottom: 28px;
-}
-
-.login-form {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.form-label {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-secondary);
-}
-
-.form-input {
-    background: var(--bg-card);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: var(--border-radius-sm);
-    padding: 12px 14px;
-    font-size: 14px;
-    color: var(--text-primary);
-    font-family: inherit;
-    transition: var(--transition);
-}
-
-.form-input:focus {
-    outline: none;
-    border-color: var(--color-green);
-}
-
-.form-error {
-    font-size: 13px;
-    color: var(--color-red);
-    display: none;
-}
-
-.form-error.visible {
-    display: block;
-}
-
-.btn-primary {
-    margin-top: 6px;
-    background: var(--color-green);
-    color: #04180b;
-    border: none;
-    border-radius: var(--border-radius-sm);
-    padding: 13px;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: inherit;
-    transition: var(--transition);
-}
-
-.btn-primary:hover {
-    background: var(--color-green-dark);
-    color: var(--text-primary);
-}
-
-.login-footnote {
-    text-align: center;
-    margin-top: 20px;
-    font-size: 12px;
-    color: var(--text-muted);
-}
-
-/* ============================================
-   CONFIGURAÇÕES
-============================================ */
-.settings-section {
-    max-width: var(--max-width);
-    margin: 0 auto 24px auto;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.settings-title {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 4px;
-}
-
-.settings-title i {
-    color: var(--color-green);
-}
-
-.settings-card {
-    background: var(--bg-secondary);
-    border-radius: var(--border-radius);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    overflow: hidden;
-}
-
-.settings-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 24px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    background: var(--bg-card);
-}
-
-.settings-card-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text-secondary);
-}
-
-.settings-card-title i {
-    color: var(--color-green);
-    font-size: 18px;
-}
-
-.settings-badge {
-    font-size: 12px;
-    font-weight: 600;
-    padding: 4px 12px;
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.settings-badge--online {
-    background: var(--color-green-bg);
-    color: var(--color-green);
-}
-
-.settings-badge--offline {
-    background: var(--color-red-bg);
-    color: var(--color-red);
-}
-
-.settings-badge--warning {
-    background: var(--color-orange-bg);
-    color: var(--color-orange);
-}
-
-.settings-badge i {
-    font-size: 8px;
-}
-
-.settings-card-body {
-    padding: 20px 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.settings-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.settings-row:last-child {
-    border-bottom: none;
-}
-
-.settings-label {
-    font-size: 14px;
-    color: var(--text-secondary);
-}
-
-.settings-value {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-primary);
-}
-
-.settings-card-body .btn-secondary {
-    align-self: flex-start;
-    margin-top: 4px;
-    padding: 8px 16px;
-    font-size: 13px;
-}
-
-.settings-actions {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-top: 4px;
-}
-
-.settings-actions .btn-primary,
-.settings-actions .btn-secondary {
-    padding: 12px 24px;
-    font-size: 14px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
-
-/* ============================================
    SKELETON LOADING
 ============================================ */
 .skeleton {
@@ -1427,13 +1173,6 @@ a {
         font-size: 12px;
     }
 
-    .nav-logout {
-        justify-content: center;
-        margin-top: 8px;
-        padding-top: 12px;
-        border-top: 1px solid rgba(255, 255, 255, 0.06);
-    }
-
     .kpi-grid {
         grid-template-columns: 1fr 1fr;
         gap: 12px;
@@ -1489,28 +1228,6 @@ a {
 
     .table-section {
         padding: 14px 16px;
-    }
-
-    .settings-card-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-    }
-
-    .settings-row {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 4px;
-        padding: 10px 0;
-    }
-
-    .settings-actions {
-        flex-direction: column;
-    }
-
-    .settings-actions .btn-primary,
-    .settings-actions .btn-secondary {
-        justify-content: center;
     }
 
     .skeleton-grid {

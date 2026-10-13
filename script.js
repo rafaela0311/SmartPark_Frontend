@@ -1,7 +1,4 @@
-// ============================================
-// SmartPark - script.js
-// Um único arquivo compartilhado por todas as páginas
-// ============================================
+
 
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -35,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
         { id: 'C-01', status: 'occupied' },
         { id: 'C-02', status: 'occupied' },
         { id: 'C-03', status: 'available' },
-        { id: 'C-04', status: 'transition' },
+        { id: 'C-04', status: 'available' },
         { id: 'C-05', status: 'occupied' },
         { id: 'D-01', status: 'available' },
         { id: 'D-02', status: 'occupied' },
@@ -186,17 +183,6 @@ document.addEventListener('DOMContentLoaded', function () {
         throw new Error(`Endpoint não reconhecido: ${endpoint}`);
     }
 
-    async function testAPIConnection() {
-        try {
-            const result = await apiFetch('/health', { signal: AbortSignal.timeout(3000) });
-            console.log('✅ API conectada com sucesso!', result);
-            return true;
-        } catch (error) {
-            console.warn('⚠️ Falha ao conectar com a API:', error);
-            return false;
-        }
-    }
-
     // ============================================
     // 4. FUNÇÃO PARA GERAR DADOS HISTÓRICOS
     // ============================================
@@ -339,9 +325,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const totemUpdateEl = document.getElementById('totemUpdateTime');
         if (totemUpdateEl) totemUpdateEl.textContent = timeString;
-
-        const systemUpdateEl = document.getElementById('lastSystemUpdate');
-        if (systemUpdateEl) systemUpdateEl.textContent = now.toLocaleString('pt-BR');
     }
 
     // ============================================
@@ -367,7 +350,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ============================================
-    // 7. KPIs (Dashboard)
+    // 7. KPIs
     // ============================================
 
     function updateKPIs(spots) {
@@ -425,10 +408,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     statusText = 'Ocupada';
                     iconColor = 'var(--color-red)';
                     break;
-                case 'transition':
-                    statusText = 'Transição';
-                    iconColor = 'var(--color-orange)';
-                    break;
                 case 'offline':
                 default:
                     statusText = 'Sem sinal';
@@ -444,7 +423,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             card.addEventListener('click', function () {
                 const currentStatus = this.dataset.status;
-                const statusCycle = ['available', 'occupied', 'transition', 'offline'];
+                const statusCycle = ['available', 'occupied', 'offline'];
                 const nextStatus = statusCycle[(statusCycle.indexOf(currentStatus) + 1) % statusCycle.length];
 
                 const spotIndex = spots.findIndex(s => s.id === spot.id);
@@ -462,7 +441,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ============================================
-    // 9. GRÁFICOS (Dashboard)
+    // 9. GRÁFICOS 
     // ============================================
 
     let chartOccupancy = null;
@@ -776,7 +755,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const { days, hours, data } = analysisData.heatmap;
         const colorPalette = ['#1b5e20', '#2e7d32', '#388e3c', '#43a047', '#4caf50', '#66bb6a', '#81c784', '#a5d6a7'];
 
-        const groupedHours = [];
         const groupedData = data.map(day => {
             const grouped = [];
             for (let i = 0; i < hours.length; i += 2) {
@@ -1072,7 +1050,7 @@ document.addEventListener('DOMContentLoaded', function () {
             wsInterval = setInterval(() => {
                 const randomIndex = Math.floor(Math.random() * spotsData.length);
                 const spot = spotsData[randomIndex];
-                const statuses = ['available', 'occupied', 'transition'];
+                const statuses = ['available', 'occupied'];
                 const nextStatus = statuses[(statuses.indexOf(spot.status) + 1) % statuses.length];
                 spot.status = nextStatus;
 
@@ -1133,7 +1111,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         const randomIndex = Math.floor(Math.random() * spotsData.length);
         const spot = spotsData[randomIndex];
-        const statuses = ['available', 'occupied', 'transition'];
+        const statuses = ['available', 'occupied'];
         spot.status = statuses[(statuses.indexOf(spot.status) + 1) % statuses.length];
 
         renderSpots(spotsData);
@@ -1144,108 +1122,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ============================================
-    // 14. LOGIN
-    // ============================================
-
-    function initLogin() {
-        const form = document.getElementById('loginForm');
-        if (!form) return;
-
-        const errorEl = document.getElementById('loginError');
-
-        form.addEventListener('submit', function (e) {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value.trim();
-            const senha = document.getElementById('loginPassword').value.trim();
-
-            if (!email || !senha) {
-                if (errorEl) {
-                    errorEl.textContent = 'Preencha e-mail e senha para continuar.';
-                    errorEl.classList.add('visible');
-                }
-                return;
-            }
-
-            showToast({
-                title: 'Bem-vindo!',
-                message: 'Acesso realizado com sucesso.',
-                type: 'success',
-                duration: 2000
-            });
-
-            setTimeout(() => {
-                window.location.href = 'dashboard_admin.html';
-            }, 500);
-        });
-    }
-
-    // ============================================
-    // 15. CONFIGURAÇÕES
-    // ============================================
-
-    function initConfiguracoes() {
-        if (!document.querySelector('.settings-section')) return;
-
-        // Atualiza informações do sistema
-        document.getElementById('lastSystemUpdate').textContent = new Date().toLocaleString('pt-BR');
-        document.getElementById('apiUrl').textContent = API_CONFIG.BASE_URL;
-        document.getElementById('apiMode').textContent = API_CONFIG.USE_MOCK ? 'Mock (Teste)' : 'Produção';
-
-        // Testar conexão
-        document.getElementById('testConnection')?.addEventListener('click', async function () {
-            const statusBadge = document.getElementById('apiStatus');
-            statusBadge.className = 'settings-badge settings-badge--warning';
-            statusBadge.innerHTML = '<i class="fas fa-circle"></i> Testando...';
-
-            const connected = await testAPIConnection();
-
-            if (connected) {
-                statusBadge.className = 'settings-badge settings-badge--online';
-                statusBadge.innerHTML = '<i class="fas fa-circle"></i> Conectado';
-                showToast({
-                    title: 'Sucesso',
-                    message: 'Conexão com a API estabelecida com sucesso!',
-                    type: 'success',
-                    duration: 3000
-                });
-            } else {
-                statusBadge.className = 'settings-badge settings-badge--offline';
-                statusBadge.innerHTML = '<i class="fas fa-circle"></i> Desconectado';
-                showToast({
-                    title: 'Erro',
-                    message: 'Não foi possível conectar à API. Verifique o servidor.',
-                    type: 'error',
-                    duration: 4000
-                });
-            }
-        });
-
-        // Recarregar dados
-        document.getElementById('refreshDataBtn')?.addEventListener('click', function () {
-            refreshData();
-            showToast({
-                title: 'Atualizado',
-                message: 'Dados recarregados com sucesso.',
-                type: 'success',
-                duration: 2000
-            });
-        });
-
-        // Resetar configurações
-        document.getElementById('resetSettings')?.addEventListener('click', function () {
-            if (confirm('Tem certeza que deseja redefinir as configurações para o padrão?')) {
-                showToast({
-                    title: 'Configurações redefinidas',
-                    message: 'Todas as configurações foram restauradas para o padrão.',
-                    type: 'info',
-                    duration: 3000
-                });
-            }
-        });
-    }
-
-    // ============================================
-    // 16. RELATÓRIOS - INICIALIZAÇÃO
+    // 14. RELATÓRIOS
     // ============================================
 
     function initRelatorios() {
@@ -1330,7 +1207,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ============================================
-    // 17. TOAST / NOTIFICAÇÕES
+    // 15. TOAST / NOTIFICAÇÕES
     // ============================================
 
     function showToast(options) {
@@ -1388,7 +1265,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ============================================
-    // 18. SKELETON LOADING
+    // 16. SKELETON LOADING
     // ============================================
 
     function showSkeleton(container, type = 'kpi', count = 4) {
@@ -1462,10 +1339,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ============================================
-    // 19. INICIALIZAÇÃO GERAL
+    // 17. INICIALIZAÇÃO GERAL
     // ============================================
-
-    initLogin();
 
     const isDataPage = document.getElementById('availableSpots') ||
         document.getElementById('spotsGrid') ||
@@ -1487,10 +1362,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     initRelatorios();
-    initConfiguracoes();
 
     // ============================================
-    // 20. EXPORTA FUNÇÕES PARA DEBUG
+    // 18. EXPORTA FUNÇÕES PARA DEBUG
     // ============================================
 
     window.__smartpark = {
