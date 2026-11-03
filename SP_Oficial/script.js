@@ -10,12 +10,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const API_CONFIG = {
         BASE_URL: 'http://localhost:5000/api/v1', // URL do Flask
         USE_MOCK: false,                          // FALSE = Consome dados reais
-        TOTAL_SPOTS: 20,                          // Usado para preencher o mapa visualmente
-        POLLING_INTERVAL: 5000                    // Fallback de atualização (5s)
+        TOTAL_SPOTS: 20,                          // Limite visual de vagas
+        POLLING_INTERVAL: 5000                    // Atualização automática (5s)
     };
 
     // ============================================
-    // 2. DADOS BASE PARA GRÁFICOS (Mock mantido)
+    // 2. DADOS BASE PARA GRÁFICOS (Mock visual)
     // ============================================
     const chartData = {
         occupancy24h: {
@@ -50,9 +50,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // TRADUÇÃO: Dashboard (Occupancy)
             if (endpoint === '/dashboard/occupancy') {
-                // Como o back tem 1 vaga real, preenchemos até 20 para o mapa ficar bonito
+                // O back-end manda 1 vaga. Criamos as outras 19 para o mapa ficar cheio.
                 const todasAsVagas = [
-                    { id: data.total_spots > 0 ? "vaga-01" : "vaga-00", status: data.occupied_spots > 0 ? 'occupied' : 'available' }
+                    { id: "vaga-01", status: data.occupied_spots > 0 ? 'occupied' : 'available' }
                 ];
                 for (let i = 2; i <= API_CONFIG.TOTAL_SPOTS; i++) {
                     todasAsVagas.push({ 
@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 };
             }
 
-            // TRADUÇÃO: Histórico/Relatórios
+            // TRADUÇÃO: Relatórios (Histórico)
             if (endpoint.includes('/history/analysis')) {
                 const byHourFormatado = data.occupancy_by_hour.map(item => ({
                     hour: item.hour,
@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Histórico de relatórios (Mock mantido, pois o back-end está em memória)
+    // Gera histórico simulado (Agora respeitando o limite de 20 vagas)
     async function buscarDadosHistoricos(from, to) {
         await new Promise(resolve => setTimeout(resolve, 500));
         const data = [];
@@ -130,13 +130,15 @@ document.addEventListener('DOMContentLoaded', function () {
             const date = new Date(start);
             date.setDate(date.getDate() + d);
             for (let h = 0; h < 24; h++) {
-                let base = (h >= 7 && h <= 19) ? 50 + Math.random() * 30 : 10 + Math.random() * 15;
-                const occupied = Math.round(Math.min(100, base));
+                let base = (h >= 7 && h <= 19) ? 10 + Math.random() * 10 : 2 + Math.random() * 5;
+                const occupied = Math.round(Math.min(API_CONFIG.TOTAL_SPOTS, Math.max(0, base)));
+                const available = API_CONFIG.TOTAL_SPOTS - occupied;
+                
                 data.push({
                     timestamp: new Date(date.getFullYear(), date.getMonth(), date.getDate(), h, 0, 0).toISOString(),
                     totalSpots: API_CONFIG.TOTAL_SPOTS,
                     occupiedSpots: occupied,
-                    availableSpots: API_CONFIG.TOTAL_SPOTS - occupied,
+                    availableSpots: available,
                     occupancyRate: Math.round((occupied / API_CONFIG.TOTAL_SPOTS) * 100)
                 });
             }
@@ -149,12 +151,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ============================================
-    // 4. FUNÇÕES DE UI (Conexão, KPIs, Totem)
+    // 4. FUNÇÕES DE UI
     // ============================================
     function updateClock() {
         const timeString = new Date().toLocaleTimeString('pt-BR');
         const lastUpdateEl = document.getElementById('lastUpdate');
         if (lastUpdateEl) lastUpdateEl.textContent = timeString;
+        
         const totemUpdateEl = document.getElementById('totemUpdateTime');
         if (totemUpdateEl) totemUpdateEl.textContent = timeString;
     }
@@ -173,16 +176,16 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function updateKPIs(spots) {
+    function updateKPIs(spots, dadosReais) {
         if (!document.getElementById('availableSpots')) return;
-        const total = spots.length;
-        const available = spots.filter(s => s.status === 'available').length;
-        const occupied = spots.filter(s => s.status === 'occupied').length;
+        
+        const available = dadosReais ? dadosReais.availableSpots : spots.filter(s => s.status === 'available').length;
+        const occupied = dadosReais ? dadosReais.occupiedSpots : spots.filter(s => s.status === 'occupied').length;
+        const total = API_CONFIG.TOTAL_SPOTS;
         const offline = spots.filter(s => s.status === 'offline').length;
-
-        const occupancyRate = total > 0 ? Math.round((occupied / total) * 100) : 0;
-        const online = total - offline;
-        const networkPercent = total > 0 ? Math.round((online / total) * 100) : 0;
+        
+        const occupancyRate = dadosReais ? dadosReais.occupancyRate : Math.round((occupied / total) * 100);
+        const networkPercent = Math.round(((total - offline) / total) * 100);
 
         document.getElementById('availableSpots').textContent = available;
         document.getElementById('totalSpots').textContent = total;
@@ -194,18 +197,18 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('avgTime').textContent = `${hours}h ${String(minutes).padStart(2, '0')}m`;
 
         document.getElementById('networkStatus').textContent = networkPercent + '%';
-        document.getElementById('sensorsOnline').textContent = online;
+        document.getElementById('sensorsOnline').textContent = total - offline;
         document.getElementById('networkBar').style.width = networkPercent + '%';
     }
 
-    function updateTotem(spots) {
+    function updateTotem(spots, dadosReais) {
         const availableEl = document.getElementById('totemAvailable');
         if (!availableEl) return;
 
-        const total = spots.length;
-        const occupied = spots.filter(s => s.status === 'occupied').length;
-        const available = total - occupied;
-        const occupancyRate = total > 0 ? Math.round((occupied / total) * 100) : 0;
+        const available = dadosReais ? dadosReais.availableSpots : spots.filter(s => s.status === 'available').length;
+        const occupied = dadosReais ? dadosReais.occupiedSpots : spots.filter(s => s.status === 'occupied').length;
+        const total = API_CONFIG.TOTAL_SPOTS;
+        const occupancyRate = dadosReais ? dadosReais.occupancyRate : Math.round((occupied / total) * 100);
 
         availableEl.textContent = available;
         document.getElementById('totemOccupied').textContent = occupied;
@@ -255,10 +258,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const canvasOccupancy = document.getElementById('chartOccupancy');
         if (!canvasOccupancy || typeof Chart === 'undefined') return;
 
-        // Gráfico 1
-        const ctx1 = canvasOccupancy.getContext('2d');
         if (chartOccupancy) chartOccupancy.destroy();
-        chartOccupancy = new Chart(ctx1, {
+        chartOccupancy = new Chart(canvasOccupancy.getContext('2d'), {
             type: 'line',
             data: {
                 labels: chartData.occupancy24h.labels,
@@ -270,40 +271,29 @@ document.addEventListener('DOMContentLoaded', function () {
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#b0b0b0' } } }, scales: { x: { ticks: { color: '#6b6b6b' } }, y: { ticks: { color: '#6b6b6b', max: 100 }, grid: { color: 'rgba(255,255,255,0.04)' } } } }
         });
 
-        // Gráfico 2
         const canvasHeatmap = document.getElementById('chartHeatmap');
         if (canvasHeatmap) {
-            const ctx2 = canvasHeatmap.getContext('2d');
             if (chartHeatmap) chartHeatmap.destroy();
-            chartHeatmap = new Chart(ctx2, {
+            chartHeatmap = new Chart(canvasHeatmap.getContext('2d'), {
                 type: 'bar',
-                data: {
-                    labels: chartData.peakTimes.days,
-                    datasets: chartData.peakTimes.hours.map((hour, idx) => ({
-                        label: hour, data: chartData.peakTimes.data.map(day => day[idx]), backgroundColor: ['#1b5e20', '#2e7d32', '#388e3c', '#43a047', '#4caf50', '#66bb6a', '#81c784', '#a5d6a7'][idx % 8], borderRadius: 2
-                    }))
-                },
+                data: { labels: chartData.peakTimes.days, datasets: chartData.peakTimes.hours.map((hour, idx) => ({
+                    label: hour, data: chartData.peakTimes.data.map(d => d[idx]), backgroundColor: ['#1b5e20', '#2e7d32', '#388e3c', '#43a047', '#4caf50', '#66bb6a', '#81c784', '#a5d6a7'][idx % 8], borderRadius: 2
+                }))},
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#b0b0b0', font: {size: 10} } } }, scales: { x: { ticks: { color: '#6b6b6b' } }, y: { max: 100, ticks: { color: '#6b6b6b' }, grid: { color: 'rgba(255,255,255,0.04)' } } } }
             });
         }
 
-        // Gráfico 3
         const canvasDuration = document.getElementById('chartDuration');
         if (canvasDuration) {
-            const ctx3 = canvasDuration.getContext('2d');
             if (chartDuration) chartDuration.destroy();
-            chartDuration = new Chart(ctx3, {
+            chartDuration = new Chart(canvasDuration.getContext('2d'), {
                 type: 'bar',
-                data: {
-                    labels: chartData.duration.labels,
-                    datasets: [{ label: 'Veículos', data: chartData.duration.data, backgroundColor: ['rgba(0, 200, 83, 0.7)', 'rgba(0, 200, 83, 0.5)', 'rgba(255, 152, 0, 0.6)', 'rgba(244, 67, 54, 0.6)'], borderRadius: 4 }]
-                },
+                data: { labels: chartData.duration.labels, datasets: [{ label: 'Veículos', data: chartData.duration.data, backgroundColor: ['rgba(0, 200, 83, 0.7)', 'rgba(0, 200, 83, 0.5)', 'rgba(255, 152, 0, 0.6)', 'rgba(244, 67, 54, 0.6)'], borderRadius: 4 }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#6b6b6b' } }, y: { ticks: { color: '#6b6b6b' }, grid: { color: 'rgba(255,255,255,0.04)' } } } }
             });
         }
     }
 
-    // Funções de gráficos de Relatórios
     function renderHourlyChart(analysisData) {
         const canvas = document.getElementById('chartHourly');
         if (!canvas || typeof Chart === 'undefined' || !analysisData) return;
@@ -344,7 +334,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ============================================
-    // 6. TABELAS DE RELATÓRIOS
+    // 6. TABELAS E PAGINAÇÃO
     // ============================================
     let tableData = [], currentPage = 1;
     const pageSize = 10;
@@ -391,17 +381,17 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ============================================
-    // 7. FLUXO PRINCIPAL E FALLBACK
+    // 7. FLUXO PRINCIPAL E POLLING
     // ============================================
     let wsInterval = null;
 
     async function carregarDados() {
         try {
             const occupancyData = await buscarDadosAPI('/dashboard/occupancy');
-            updateKPIs(occupancyData.spots);
+            updateKPIs(occupancyData.spots, occupancyData);
             renderSpots(occupancyData.spots);
             updateCharts(occupancyData.spots);
-            updateTotem(occupancyData.spots);
+            updateTotem(occupancyData.spots, occupancyData);
             updateClock();
             setConnectionStatus(true);
         } catch (error) {
@@ -409,7 +399,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // O Back-end não tem WebSocket, então usamos Polling (Requisitar a cada 5s)
     function iniciarPolling() {
         console.log('Polling REST ativado (Buscando dados a cada 5s)');
         setConnectionStatus(true);
@@ -443,11 +432,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('nextPage')?.addEventListener('click', () => { if (currentPage < Math.ceil(tableData.length / pageSize)) { currentPage++; renderTable({ data: tableData }); } });
     }
 
-    // ============================================
-    // 8. INICIALIZAÇÃO
-    // ============================================
     const isDataPage = document.getElementById('availableSpots') || document.getElementById('spotsGrid') || document.getElementById('totemAvailable');
-    
     if (isDataPage) {
         carregarDados();
         iniciarPolling();

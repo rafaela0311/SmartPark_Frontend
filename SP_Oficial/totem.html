@@ -1,7 +1,5 @@
-<!-- totem.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,64 +8,41 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
-
 <body>
     <div class="totem-container">
-        <!-- Header -->
         <header class="totem-header">
-            <div class="logo">
-                <i class="fas fa-parking"></i>
-                Smart<span>Park</span>
-            </div>
-            <div class="last-update">
-                <i class="fas fa-clock"></i>
-                Atualizado: <span id="totemUpdateTime">--:--:--</span>
-            </div>
+            <div class="logo"><i class="fas fa-parking"></i> Smart<span>Park</span></div>
+            <div class="last-update"><i class="fas fa-clock"></i> Atualizado: <span id="totemUpdateTime">--:--:--</span></div>
         </header>
-        <!-- NAVEGAÇÃO -->
+
         <nav class="main-nav">
             <div class="nav-links">
                 <a class="nav-link" href="dashboard_admin.html"><i class="fas fa-gauge-high"></i> Dashboard</a>
                 <a class="nav-link" href="vagas.html"><i class="fas fa-map-location-dot"></i> Mapa de Vagas</a>
                 <a class="nav-link active" href="totem.html"><i class="fas fa-square-parking"></i> Totem</a>
                 <a class="nav-link" href="relatorios.html"><i class="fas fa-chart-simple"></i> Relatórios</a>
-
             </div>
         </nav>
 
-
-        <!-- Status principal -->
         <main class="totem-main">
             <div class="status-grid">
-                <!-- Vagas Disponíveis -->
                 <div class="status-card available">
-                    <div class="status-icon">
-                        <i class="fas fa-circle-check"></i>
-                    </div>
+                    <div class="status-icon"><i class="fas fa-circle-check"></i></div>
                     <div class="status-number" id="totemAvailable">--</div>
                     <div class="status-label">VAGAS DISPONÍVEIS</div>
                 </div>
-
-                <!-- Vagas Ocupadas -->
                 <div class="status-card occupied">
-                    <div class="status-icon">
-                        <i class="fas fa-circle-xmark"></i>
-                    </div>
+                    <div class="status-icon"><i class="fas fa-circle-xmark"></i></div>
                     <div class="status-number" id="totemOccupied">--</div>
                     <div class="status-label">VAGAS OCUPADAS</div>
                 </div>
-
-                <!-- Total de Vagas -->
                 <div class="status-card total">
-                    <div class="status-icon">
-                        <i class="fas fa-square-parking"></i>
-                    </div>
+                    <div class="status-icon"><i class="fas fa-square-parking"></i></div>
                     <div class="status-number" id="totemTotal">--</div>
                     <div class="status-label">TOTAL DE VAGAS</div>
                 </div>
             </div>
 
-            <!-- Barra de ocupação -->
             <div class="occupancy-bar-container">
                 <div class="occupancy-bar-label">
                     <span>Taxa de Ocupação</span>
@@ -78,14 +53,11 @@
                 </div>
             </div>
 
-            <!-- Mensagem de status -->
             <div class="totem-message" id="totemMessage">
-                <i class="fas fa-check-circle"></i>
-                Estacionamento com vagas disponíveis
+                <i class="fas fa-check-circle"></i> Estacionamento com vagas disponíveis
             </div>
         </main>
 
-        <!-- Footer -->
         <footer class="totem-footer">
             <span>SmartPark v1.0</span>
             <span>•</span>
@@ -95,5 +67,4 @@
 
     <script src="script.js"></script>
 </body>
-
 </html>
