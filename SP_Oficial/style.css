@@ -88,6 +88,8 @@ a { color: inherit; text-decoration: none; }
 .spot-card.occupied .spot-status, .spot-card.occupied i { color: var(--color-red); }
 .spot-card.offline { border-color: var(--color-gray); background: transparent; border-style: dashed; }
 .spot-card.offline .spot-status { color: var(--color-gray-light); } .spot-card.offline i { color: var(--color-gray); }
+.spot-card.service { border-color: var(--color-orange); background: var(--color-orange-bg); }
+.spot-card.service .spot-status, .spot-card.service i { color: var(--color-orange); }
 
 /* LEGENDA */
 .legend { display: flex; gap: 20px; flex-wrap: wrap; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.06); }
@@ -96,6 +98,7 @@ a { color: inherit; text-decoration: none; }
 .legend-swatch--available { background: var(--color-green); }
 .legend-swatch--occupied { background: var(--color-red); }
 .legend-swatch--offline { background: var(--color-gray); border: 1px dashed var(--color-gray-light); }
+.legend-swatch--service { background: var(--color-orange); }
 
 /* GRÁFICOS */
 .charts-grid { max-width: var(--max-width); margin: 0 auto 24px auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }

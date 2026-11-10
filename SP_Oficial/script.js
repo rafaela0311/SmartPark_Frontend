@@ -54,13 +54,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // TRADUÇÃO: Dados do Dashboard de Ocupação
             if (endpoint === '/dashboard/occupancy') {
-                // A 'vaga-01' é a única vaga real conectada fisicamente ao ESP32
+                // A 'vaga-00' é a vaga de serviço. A 'vaga-01' é a única vaga real conectada fisicamente ao ESP32
                 const todasAsVagas = [
+                    { id: "vaga-00", status: 'service' },
                     { id: "vaga-01", status: data.occupied_spots > 0 ? 'occupied' : 'available' }
                 ];
                 
-                // As outras 19 vagas são geradas de forma simulada/estática para preencher o mapa do estacionamento
-                for (let i = 2; i <= API_CONFIG.TOTAL_SPOTS; i++) {
+                // As outras 18 vagas são geradas de forma simulada/estática para preencher o mapa do estacionamento
+                for (let i = 2; i <= 19; i++) {
                     let statusFixo = 'available'; // Define como padrão verde (livre)
                     if (i % 3 === 0) statusFixo = 'occupied'; // A cada 3 vagas, define como ocupada
                     if (i === 5 || i === 15) statusFixo = 'offline'; // Simula vagas específicas sem sinal
@@ -71,10 +72,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
                 }
 
-                // O front-end calcula as estatísticas totais com base no mapeamento visual gerado
-                const totalMapeado = todasAsVagas.length;
-                const ocupadasMapeadas = todasAsVagas.filter(s => s.status === 'occupied').length;
-                const livresMapeadas = todasAsVagas.filter(s => s.status === 'available').length;
+                // O front-end calcula as estatísticas totais com base no mapeamento visual gerado (ignorando a vaga de serviço)
+                const vagasValidas = todasAsVagas.filter(s => s.status !== 'service');
+                const totalMapeado = vagasValidas.length;
+                const ocupadasMapeadas = vagasValidas.filter(s => s.status === 'occupied').length;
+                const livresMapeadas = vagasValidas.filter(s => s.status === 'available').length;
                 const taxaMapeada = Math.round((ocupadasMapeadas / totalMapeado) * 100);
 
                 return {
@@ -262,10 +264,16 @@ document.addEventListener('DOMContentLoaded', function () {
         spots.forEach(spot => {
             const card = document.createElement('div');
             card.className = `spot-card ${spot.status}`;
+            
+            let textoStatus = 'Disponível';
+            if (spot.status === 'occupied') textoStatus = 'Ocupada';
+            if (spot.status === 'offline') textoStatus = 'Sem sinal';
+            if (spot.status === 'service') textoStatus = 'Serviço';
+
             card.innerHTML = `
                 <div class="spot-id">${spot.id}</div>
                 <i class="fas fa-circle" style="font-size: 18px;"></i>
-                <div class="spot-status">${spot.status === 'available' ? 'Disponível' : (spot.status === 'occupied' ? 'Ocupada' : 'Sem sinal')}</div>
+                <div class="spot-status">${textoStatus}</div>
             `;
             grid.appendChild(card);
         });
