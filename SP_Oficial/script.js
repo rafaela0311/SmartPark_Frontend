@@ -2,20 +2,21 @@
 // SmartPark - script.js (Integração Real com Back-end)
 // ============================================
 
+// Aguarda o documento HTML carregar totalmente antes de executar o script
 document.addEventListener('DOMContentLoaded', function () {
 
     // ============================================
     // 1. CONFIGURAÇÃO DA API
     // ============================================
     const API_CONFIG = {
-        BASE_URL: 'http://localhost:5000/api/v1', // URL do Flask
-        USE_MOCK: false,                          // FALSE = Consome dados reais
-        TOTAL_SPOTS: 20,                          // Limite visual de vagas
-        POLLING_INTERVAL: 5000                    // Atualização automática (5s)
+        BASE_URL: 'http://localhost:5000/api/v1', // Endereço base da API Flask
+        USE_MOCK: false,                         // FALSE = Utiliza dados reais vindos da API
+        TOTAL_SPOTS: 20,                         // Limite total de vagas exibidas visualmente no painel
+        POLLING_INTERVAL: 5000                   // Intervalo de tempo (em milissegundos = 5s) para atualizar os dados automaticamente
     };
 
     // ============================================
-    // 2. DADOS BASE PARA GRÁFICOS (Mock visual)
+    // 2. DADOS BASE PARA GRÁFICOS (Fallback / Mock visual)
     // ============================================
     const chartData = {
         occupancy24h: {
@@ -39,27 +40,30 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     };
 
-          // ============================================
-    // 3. INTEGRAÇÃO COM A API (Tradutor)
+    // ============================================
+    // 3. INTEGRAÇÃO COM A API (Função Tradutora)
     // ============================================
     async function buscarDadosAPI(endpoint) {
         try {
+            // Faz uma requisição HTTP GET combinando a URL base com o endpoint desejado
             const response = await fetch(`${API_CONFIG.BASE_URL}${endpoint}`);
+            // Se a resposta HTTP falhar, lança um erro com o código de status correspondente
             if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+            // Converte a resposta recebida para o formato JSON
             const data = await response.json();
 
-            // TRADUÇÃO: Dashboard (Occupancy)
+            // TRADUÇÃO: Dados do Dashboard de Ocupação
             if (endpoint === '/dashboard/occupancy') {
-                // A vaga-01 é a única real (conectada ao ESP32)
+                // A 'vaga-01' é a única vaga real conectada fisicamente ao ESP32
                 const todasAsVagas = [
                     { id: "vaga-01", status: data.occupied_spots > 0 ? 'occupied' : 'available' }
                 ];
                 
-                // As outras 19 vagas são fixas (não piscam mais)
+                // As outras 19 vagas são geradas de forma simulada/estática para preencher o mapa do estacionamento
                 for (let i = 2; i <= API_CONFIG.TOTAL_SPOTS; i++) {
-                    let statusFixo = 'available'; // Padrão verde
-                    if (i % 3 === 0) statusFixo = 'occupied'; // A cada 3, uma vermelha
-                    if (i === 5 || i === 15) statusFixo = 'offline'; // Vaga 5 e 15 sem sinal
+                    let statusFixo = 'available'; // Define como padrão verde (livre)
+                    if (i % 3 === 0) statusFixo = 'occupied'; // A cada 3 vagas, define como ocupada
+                    if (i === 5 || i === 15) statusFixo = 'offline'; // Simula vagas específicas sem sinal
 
                     todasAsVagas.push({ 
                         id: `vaga-${String(i).padStart(2, '0')}`, 
@@ -67,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
                 }
 
-                // O Front-end calcula os números baseados no que está sendo desenhado no mapa
+                // O front-end calcula as estatísticas totais com base no mapeamento visual gerado
                 const totalMapeado = todasAsVagas.length;
                 const ocupadasMapeadas = todasAsVagas.filter(s => s.status === 'occupied').length;
                 const livresMapeadas = todasAsVagas.filter(s => s.status === 'available').length;
@@ -76,14 +80,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 return {
                     timestamp: new Date().toISOString(),
                     totalSpots: totalMapeado,
-                    availableSpots: livresMapeadas, // Bate com as vagas verdes
-                    occupiedSpots: ocupadasMapeadas, // Bate com as vagas vermelhas
-                    occupancyRate: taxaMapeada,      // Bate com a porcentagem
+                    availableSpots: livresMapeadas, 
+                    occupiedSpots: ocupadasMapeadas, 
+                    occupancyRate: taxaMapeada,      
                     spots: todasAsVagas
                 };
             }
 
-            // TRADUÇÃO: Mapa de Vagas
+            // TRADUÇÃO: Mapeamento da listagem geral de vagas
             if (endpoint === '/spots') {
                 const spotsFormatados = data.map(v => ({
                     id: v.id,
@@ -98,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 };
             }
 
-            // TRADUÇÃO: Totem
+            // TRADUÇÃO: Dados para o Totem / Painel físico
             if (endpoint === '/panel/availability') {
                 return {
                     updatedAt: new Date().toISOString(),
@@ -108,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 };
             }
 
-            // TRADUÇÃO: Histórico/Relatórios
+            // TRADUÇÃO: Histórico e Análises estatísticas
             if (endpoint.includes('/history/analysis')) {
                 const byHourFormatado = data.occupancy_by_hour.map(item => ({
                     hour: item.hour,
@@ -124,15 +128,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
             return data;
         } catch (error) {
+            // Em caso de erro na requisição, registra no console e altera o status de conexão para desconectado
             console.error(`Erro ao buscar ${endpoint}:`, error);
             setConnectionStatus(false);
             throw error;
         }
     }
 
-    // Histórico de relatórios simulado (Mantido como estava)
+    // Função auxiliar para simular dados de histórico de relatórios por período
     async function buscarDadosHistoricos(from, to) {
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 500)); // Simula um atraso de rede (delay de 0.5s)
         const data = [];
         const start = new Date(from);
         const end = new Date(to);
@@ -163,9 +168,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ============================================
-    // 4. FUNÇÕES DE UI
+    // 4. FUNÇÕES DE INTERFACE DO USUÁRIO (UI)
     // ============================================
     function updateClock() {
+        // Atualiza a hora atual formatada em português do Brasil na interface
         const timeString = new Date().toLocaleTimeString('pt-BR');
         const lastUpdateEl = document.getElementById('lastUpdate');
         if (lastUpdateEl) lastUpdateEl.textContent = timeString;
@@ -175,6 +181,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function setConnectionStatus(connected) {
+        // Atualiza elementos visuais de indicação de status da conexão (Online/Offline)
         const indicator = document.getElementById('wsIndicator');
         const statusText = document.getElementById('wsStatus');
         const banner = document.getElementById('alertBanner');
@@ -188,10 +195,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-       function updateKPIs(spots, dadosReais) {
+    function updateKPIs(spots, dadosReais) {
         if (!document.getElementById('availableSpots')) return;
         
-        // Conta os status diretamente do array de vagas que será desenhado
+        // Conta os status diretamente com base no array de vagas renderizadas
         const total = spots.length;
         const available = spots.filter(s => s.status === 'available').length;
         const occupied = spots.filter(s => s.status === 'occupied').length;
@@ -200,6 +207,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const occupancyRate = Math.round((occupied / total) * 100);
         const networkPercent = Math.round(((total - offline) / total) * 100);
 
+        // Atualiza os valores textuais e larguras de barras de progresso nos KPIs da tela
         document.getElementById('availableSpots').textContent = available;
         document.getElementById('totalSpots').textContent = total;
         document.getElementById('occupancyRate').textContent = occupancyRate + '%';
@@ -223,6 +231,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const total = API_CONFIG.TOTAL_SPOTS;
         const occupancyRate = dadosReais ? dadosReais.occupancyRate : Math.round((occupied / total) * 100);
 
+        // Atualiza as informações exibidas no componente de totem digital
         availableEl.textContent = available;
         document.getElementById('totemOccupied').textContent = occupied;
         document.getElementById('totemTotal').textContent = total;
@@ -247,8 +256,9 @@ document.addEventListener('DOMContentLoaded', function () {
     function renderSpots(spots) {
         const grid = document.getElementById('spotsGrid');
         if (!grid) return;
-        grid.innerHTML = '';
+        grid.innerHTML = ''; // Limpa o grid antes de renderizar novamente
 
+        // Cria dinamicamente os cards visuais para cada vaga no grid do mapa
         spots.forEach(spot => {
             const card = document.createElement('div');
             card.className = `spot-card ${spot.status}`;
@@ -262,7 +272,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ============================================
-    // 5. GRÁFICOS (Chart.js)
+    // 5. GRÁFICOS (Utilizando a biblioteca Chart.js)
     // ============================================
     let chartOccupancy = null, chartHeatmap = null, chartDuration = null;
     let chartHourly = null, chartHeatmapReport = null, chartDaily = null;
@@ -271,6 +281,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const canvasOccupancy = document.getElementById('chartOccupancy');
         if (!canvasOccupancy || typeof Chart === 'undefined') return;
 
+        // Destroi o gráfico anterior caso já exista para evitar sobreposição ou bugs visuais
         if (chartOccupancy) chartOccupancy.destroy();
         chartOccupancy = new Chart(canvasOccupancy.getContext('2d'), {
             type: 'line',
@@ -347,10 +358,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ============================================
-    // 6. TABELAS E PAGINAÇÃO
+    // 6. TABELAS E PAGINAÇÃO DE DADOS
     // ============================================
     let tableData = [], currentPage = 1;
-    const pageSize = 10;
+    const pageSize = 10; // Número máximo de itens exibidos por página na tabela
 
     function renderTable(historicalData) {
         const tbody = document.getElementById('tableBody');
@@ -360,6 +371,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const start = (currentPage - 1) * pageSize;
         const pageData = tableData.slice(start, start + pageSize);
 
+        // Gera as linhas HTML da tabela com base nos dados da página atual
         tbody.innerHTML = pageData.map(item => {
             const date = new Date(item.timestamp);
             const rate = item.occupancyRate;
@@ -372,6 +384,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 </tr>`;
         }).join('');
 
+        // Atualiza os textos informativos de paginação e o estado dos botões (Próximo / Anterior)
         document.getElementById('tableCount').textContent = `Mostrando ${start + 1}-${Math.min(start + pageSize, tableData.length)} de ${tableData.length} registros`;
         document.getElementById('pageInfo').textContent = `Página ${currentPage} de ${totalPages}`;
         document.getElementById('prevPage').disabled = currentPage <= 1;
@@ -394,7 +407,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ============================================
-    // 7. FLUXO PRINCIPAL E POLLING
+    // 7. FLUXO PRINCIPAL E POLLING (ATUALIZAÇÃO AUTOMÁTICA)
     // ============================================
     let wsInterval = null;
 
@@ -416,6 +429,7 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log('Polling REST ativado (Buscando dados a cada 5s)');
         setConnectionStatus(true);
         if (wsInterval) clearInterval(wsInterval);
+        // Define o intervalo para chamar a função carregarDados repetidamente a cada POLLING_INTERVAL (5 segundos)
         wsInterval = setInterval(carregarDados, API_CONFIG.POLLING_INTERVAL);
     }
 
@@ -425,11 +439,13 @@ document.addEventListener('DOMContentLoaded', function () {
         const to = document.getElementById('dateTo').value;
         carregarRelatorios(from, to);
 
+        // Evento de clique para aplicar filtros de data nos relatórios
         document.getElementById('applyFilters')?.addEventListener('click', () => {
             currentPage = 1;
             carregarRelatorios(document.getElementById('dateFrom').value, document.getElementById('dateTo').value);
         });
 
+        // Evento para exportar a tabela de dados em formato CSV
         document.getElementById('exportCSV')?.addEventListener('click', () => {
             if (tableData.length === 0) return;
             const headers = ['Data/Hora', 'Total Vagas', 'Ocupadas', 'Disponíveis', 'Taxa Ocupação'];
@@ -441,15 +457,17 @@ document.addEventListener('DOMContentLoaded', function () {
             link.click();
         });
 
+        // Eventos de paginação da tabela (botões Próximo e Anterior)
         document.getElementById('prevPage')?.addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderTable({ data: tableData }); } });
         document.getElementById('nextPage')?.addEventListener('click', () => { if (currentPage < Math.ceil(tableData.length / pageSize)) { currentPage++; renderTable({ data: tableData }); } });
     }
 
+    // Verifica se a página atual possui os elementos de dados necessários e inicia o fluxo
     const isDataPage = document.getElementById('availableSpots') || document.getElementById('spotsGrid') || document.getElementById('totemAvailable');
     if (isDataPage) {
         carregarDados();
         iniciarPolling();
-        setInterval(updateClock, 10000);
+        setInterval(updateClock, 10000); // Atualiza o relógio a cada 10 segundos
     }
     
     initRelatorios();
