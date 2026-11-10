@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     };
 
-    // ============================================
+          // ============================================
     // 3. INTEGRAÇÃO COM A API (Tradutor)
     // ============================================
     async function buscarDadosAPI(endpoint) {
@@ -50,23 +50,35 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // TRADUÇÃO: Dashboard (Occupancy)
             if (endpoint === '/dashboard/occupancy') {
-                // O back-end manda 1 vaga. Criamos as outras 19 para o mapa ficar cheio.
+                // A vaga-01 é a única real (conectada ao ESP32)
                 const todasAsVagas = [
                     { id: "vaga-01", status: data.occupied_spots > 0 ? 'occupied' : 'available' }
                 ];
+                
+                // As outras 19 vagas são fixas (não piscam mais)
                 for (let i = 2; i <= API_CONFIG.TOTAL_SPOTS; i++) {
+                    let statusFixo = 'available'; // Padrão verde
+                    if (i % 3 === 0) statusFixo = 'occupied'; // A cada 3, uma vermelha
+                    if (i === 5 || i === 15) statusFixo = 'offline'; // Vaga 5 e 15 sem sinal
+
                     todasAsVagas.push({ 
                         id: `vaga-${String(i).padStart(2, '0')}`, 
-                        status: Math.random() > 0.6 ? 'occupied' : (Math.random() > 0.8 ? 'offline' : 'available') 
+                        status: statusFixo 
                     });
                 }
 
+                // O Front-end calcula os números baseados no que está sendo desenhado no mapa
+                const totalMapeado = todasAsVagas.length;
+                const ocupadasMapeadas = todasAsVagas.filter(s => s.status === 'occupied').length;
+                const livresMapeadas = todasAsVagas.filter(s => s.status === 'available').length;
+                const taxaMapeada = Math.round((ocupadasMapeadas / totalMapeado) * 100);
+
                 return {
                     timestamp: new Date().toISOString(),
-                    totalSpots: API_CONFIG.TOTAL_SPOTS,
-                    availableSpots: data.free_spots,
-                    occupiedSpots: data.occupied_spots,
-                    occupancyRate: data.occupancy_percentage,
+                    totalSpots: totalMapeado,
+                    availableSpots: livresMapeadas, // Bate com as vagas verdes
+                    occupiedSpots: ocupadasMapeadas, // Bate com as vagas vermelhas
+                    occupancyRate: taxaMapeada,      // Bate com a porcentagem
                     spots: todasAsVagas
                 };
             }
@@ -96,7 +108,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 };
             }
 
-            // TRADUÇÃO: Relatórios (Histórico)
+            // TRADUÇÃO: Histórico/Relatórios
             if (endpoint.includes('/history/analysis')) {
                 const byHourFormatado = data.occupancy_by_hour.map(item => ({
                     hour: item.hour,
@@ -118,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Gera histórico simulado (Agora respeitando o limite de 20 vagas)
+    // Histórico de relatórios simulado (Mantido como estava)
     async function buscarDadosHistoricos(from, to) {
         await new Promise(resolve => setTimeout(resolve, 500));
         const data = [];
@@ -176,15 +188,16 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function updateKPIs(spots, dadosReais) {
+       function updateKPIs(spots, dadosReais) {
         if (!document.getElementById('availableSpots')) return;
         
-        const available = dadosReais ? dadosReais.availableSpots : spots.filter(s => s.status === 'available').length;
-        const occupied = dadosReais ? dadosReais.occupiedSpots : spots.filter(s => s.status === 'occupied').length;
-        const total = API_CONFIG.TOTAL_SPOTS;
+        // Conta os status diretamente do array de vagas que será desenhado
+        const total = spots.length;
+        const available = spots.filter(s => s.status === 'available').length;
+        const occupied = spots.filter(s => s.status === 'occupied').length;
         const offline = spots.filter(s => s.status === 'offline').length;
         
-        const occupancyRate = dadosReais ? dadosReais.occupancyRate : Math.round((occupied / total) * 100);
+        const occupancyRate = Math.round((occupied / total) * 100);
         const networkPercent = Math.round(((total - offline) / total) * 100);
 
         document.getElementById('availableSpots').textContent = available;
