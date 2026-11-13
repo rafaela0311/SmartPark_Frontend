@@ -454,11 +454,29 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         // Evento para exportar a tabela de dados em formato CSV
-        document.getElementById('exportCSV')?.addEventListener('click', () => {
+                document.getElementById('exportCSV')?.addEventListener('click', () => {
             if (tableData.length === 0) return;
+            
             const headers = ['Data/Hora', 'Total Vagas', 'Ocupadas', 'Disponíveis', 'Taxa Ocupação'];
-            const rows = tableData.map(i => [new Date(i.timestamp).toLocaleString('pt-BR'), i.totalSpots, i.occupiedSpots, i.availableSpots, i.occupancyRate + '%']);
-            const csvContent = [headers, ...rows].map(r => r.join(',')).join('\n');
+            
+            const rows = tableData.map(i => {
+                const dataObj = new Date(i.timestamp);
+                const dataFormatada = dataObj.toLocaleDateString('pt-BR');
+                const horaFormatada = dataObj.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'});
+                
+                // Adiciona aspas em todos os campos para evitar que o Excel quebre o texto se tiver vírgula
+                return [
+                    `"${dataFormatada} ${horaFormatada}"`,
+                    `"${i.totalSpots}"`,
+                    `"${i.occupiedSpots}"`,
+                    `"${i.availableSpots}"`,
+                    `"${i.occupancyRate}%"`
+                ].join(';'); 
+            });
+
+            // O \uFEFF no início é o que garante que os acentos apareçam corretamente
+            const csvContent = '\uFEFF' + [headers.join(';'), ...rows].join('\r\n');
+            
             const link = document.createElement('a');
             link.href = URL.createObjectURL(new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }));
             link.download = `relatorio_smartpark_${new Date().toISOString().slice(0, 10)}.csv`;
